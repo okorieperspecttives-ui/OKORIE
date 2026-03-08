@@ -1,37 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Trade Journal
 
-## Getting Started
+AI Trade Journal is a Next.js web app for AI-assisted trading journaling, with a minimal landing page, theme toggle (light/dark), and Firebase-backed authentication.
 
-First, run the development server:
+## Features
+
+- Token-based light/dark theme system from `app/globals.css`
+- Global top-right theme toggle
+- Focused home CTA flow to `/auth`
+- Authentication page with:
+  - Email/password sign in & sign up
+  - Strict email and password validation
+  - Google sign-in via Firebase Auth
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Firebase Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file in the project root and set:
 
-## Learn More
+```bash
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
 
-To learn more about Next.js, take a look at the following resources:
+Then in Firebase Console:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Enable **Email/Password** under Authentication > Sign-in method.
+2. Enable **Google** as a provider.
+3. Add your local domain (for dev) in authorized domains if required.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Validation Rules Implemented
 
-## Deploy on Vercel
+- Email must match standard email format
+- Password must include:
+  - at least 12 characters
+  - uppercase letter
+  - lowercase letter
+  - number
+  - special character
+  - no spaces
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Build & Lint
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# OKORIE
+```bash
+npm run lint
+npm run build
+```
