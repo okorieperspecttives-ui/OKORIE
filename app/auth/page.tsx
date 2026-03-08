@@ -3,11 +3,45 @@
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
-import {
-  getPasswordErrors,
-  getPasswordRuleStatus,
-  isValidEmail,
-} from "@/lib/auth-validation";
+
+const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const PASSWORD_RULES = {
+  minLength: 12,
+  upper: /[A-Z]/,
+  lower: /[a-z]/,
+  number: /\d/,
+  special: /[^A-Za-z0-9]/,
+  noSpace: /^\S+$/,
+};
+
+function isValidEmail(email: string) {
+  return EMAIL_PATTERN.test(email);
+}
+
+function getPasswordErrors(password: string) {
+  const errors: string[] = [];
+
+  if (password.length < PASSWORD_RULES.minLength) {
+    errors.push("At least 12 characters");
+  }
+  if (!PASSWORD_RULES.upper.test(password)) {
+    errors.push("At least 1 uppercase letter");
+  }
+  if (!PASSWORD_RULES.lower.test(password)) {
+    errors.push("At least 1 lowercase letter");
+  }
+  if (!PASSWORD_RULES.number.test(password)) {
+    errors.push("At least 1 number");
+  }
+  if (!PASSWORD_RULES.special.test(password)) {
+    errors.push("At least 1 special character");
+  }
+  if (!PASSWORD_RULES.noSpace.test(password)) {
+    errors.push("No spaces allowed");
+  }
+
+  return errors;
+}
 
 function getFirebaseConfig() {
   return {
@@ -22,24 +56,18 @@ function hasConfig(config: ReturnType<typeof getFirebaseConfig>) {
   return Object.values(config).every(Boolean);
 }
 
-function RuleItem({ ok, label }: { ok: boolean; label: string }) {
-  return <li className={ok ? "text-profit" : "text-loss"}>{ok ? "✓" : "•"} {label}</li>;
-}
-
 export default function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [pending, setPending] = useState(false);
   const [firebaseLoaded, setFirebaseLoaded] = useState(false);
 
-  const passwordRuleStatus = useMemo(() => getPasswordRuleStatus(password), [password]);
+  const passwordErrors = useMemo(() => getPasswordErrors(password), [password]);
 
   const initFirebase = () => {
-    setError("");
     const config = getFirebaseConfig();
 
     if (!hasConfig(config)) {
@@ -69,22 +97,10 @@ export default function AuthPage() {
       return;
     }
 
-    if (!password) {
-      setError("Password is required.");
+    const currentPasswordErrors = getPasswordErrors(password);
+    if (currentPasswordErrors.length) {
+      setError(`Password requirements: ${currentPasswordErrors.join(", ")}`);
       return;
-    }
-
-    if (!isLoginMode) {
-      const currentPasswordErrors = getPasswordErrors(password);
-      if (currentPasswordErrors.length) {
-        setError(`Password requirements: ${currentPasswordErrors.join(", ")}`);
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setError("Password confirmation does not match.");
-        return;
-      }
     }
 
     if (!window.firebase || !firebaseLoaded) {
@@ -168,7 +184,7 @@ export default function AuthPage() {
             id="email"
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => setEmail(event.target.value.trim())}
             className="min-h-11 w-full rounded-md border border-border bg-surface px-3 outline-none ring-primary focus:ring-2"
             placeholder="you@example.com"
             required
@@ -183,39 +199,26 @@ export default function AuthPage() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             className="min-h-11 w-full rounded-md border border-border bg-surface px-3 outline-none ring-primary focus:ring-2"
-            placeholder={isLoginMode ? "Enter your password" : "Create a strong password"}
+            placeholder="Enter strong password"
             required
           />
 
-          {!isLoginMode ? (
-            <>
-              <label className="block text-sm font-medium" htmlFor="confirmPassword">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                className="min-h-11 w-full rounded-md border border-border bg-surface px-3 outline-none ring-primary focus:ring-2"
-                placeholder="Re-enter your password"
-                required
-              />
+          <p className="text-xs text-text-secondary">
+            Password must be 12+ chars with uppercase, lowercase, number, special character, and no
+            spaces.
+          </p>
 
-              <ul className="list-inside list-disc text-xs">
-                <RuleItem ok={passwordRuleStatus.minLength} label="At least 12 characters" />
-                <RuleItem ok={passwordRuleStatus.upper} label="At least 1 uppercase letter" />
-                <RuleItem ok={passwordRuleStatus.lower} label="At least 1 lowercase letter" />
-                <RuleItem ok={passwordRuleStatus.number} label="At least 1 number" />
-                <RuleItem ok={passwordRuleStatus.special} label="At least 1 special character" />
-                <RuleItem ok={passwordRuleStatus.noSpace} label="No spaces allowed" />
-              </ul>
-            </>
+          {!isLoginMode && password.length > 0 && passwordErrors.length > 0 ? (
+            <ul className="list-inside list-disc text-xs text-loss">
+              {passwordErrors.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
           ) : null}
 
           <button
             type="submit"
-            disabled={pending || !firebaseLoaded}
+            disabled={pending}
             className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 font-semibold text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
           >
             {pending ? "Please wait..." : isLoginMode ? "Sign In" : "Create Account"}
@@ -225,7 +228,7 @@ export default function AuthPage() {
         <button
           type="button"
           onClick={continueWithGoogle}
-          disabled={pending || !firebaseLoaded}
+          disabled={pending}
           className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-divider bg-transparent px-4 font-semibold hover:bg-hover disabled:cursor-not-allowed disabled:opacity-70"
         >
           Continue with Google
@@ -233,21 +236,12 @@ export default function AuthPage() {
 
         <button
           type="button"
-          onClick={() => {
-            setIsLoginMode((prev) => !prev);
-            setError("");
-            setStatus("");
-            setPassword("");
-            setConfirmPassword("");
-          }}
+          onClick={() => setIsLoginMode((prev) => !prev)}
           className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-surface px-4 font-medium text-text-primary hover:bg-hover"
         >
           {isLoginMode ? "Need an account? Sign up" : "Already have an account? Sign in"}
         </button>
 
-        {!firebaseLoaded && !error ? (
-          <p className="mt-4 text-sm text-text-secondary">Loading Firebase authentication...</p>
-        ) : null}
         {error ? <p className="mt-4 text-sm text-loss">{error}</p> : null}
         {status ? <p className="mt-4 text-sm text-profit">{status}</p> : null}
 

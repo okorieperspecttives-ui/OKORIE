@@ -20,9 +20,7 @@ function getInitialTheme(): Theme {
 }
 
 function applyTheme(theme: Theme) {
-  const root = document.documentElement;
-  root.classList.remove("light", "dark");
-  root.classList.add(theme);
+  document.documentElement.classList.toggle("dark", theme === "dark");
 }
 
 export function ThemeToggle() {
@@ -33,10 +31,14 @@ export function ThemeToggle() {
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
+  };
+
   return (
     <button
       type="button"
-      onClick={() => setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"))}
+      onClick={toggleTheme}
       aria-label="Toggle theme"
       className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border bg-card text-text-primary hover:bg-hover"
     >
