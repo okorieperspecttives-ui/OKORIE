@@ -11,15 +11,14 @@ export default function Home() {
           Upload your chart. Get pro-level trade feedback instantly.
         </h1>
         <p className="mt-4 text-base text-text-secondary sm:text-lg">
-          Stop manual journaling and let AI extract, critique, and coach every
-          trade in seconds.
+          Journal smarter with AI analysis, strategy critique, and coaching insights.
         </p>
-        <button
-          type="button"
+        <Link
+          href="/auth"
           className="mt-8 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-hover"
         >
-          <Link href="/auth">Get Started</Link>
-        </button>
+          Get Started
+        </Link>
       </section>
     </main>
   );
