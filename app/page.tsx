@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 text-center text-text-primary">
@@ -9,13 +11,14 @@ export default function Home() {
           Upload your chart. Get pro-level trade feedback instantly.
         </h1>
         <p className="mt-4 text-base text-text-secondary sm:text-lg">
-          Stop manual journaling and let AI extract, critique, and coach every trade in seconds.
+          Stop manual journaling and let AI extract, critique, and coach every
+          trade in seconds.
         </p>
         <button
           type="button"
           className="mt-8 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-hover"
         >
-          Upload Trade Screenshot
+          <Link href="/auth">Get Started</Link>
         </button>
       </section>
     </main>
