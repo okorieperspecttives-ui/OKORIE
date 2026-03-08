@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SidebarShell } from "@/components/sidebar-shell";
 import { AuthProvider } from "@/components/auth-context";
 import { LaunchGate } from "@/components/launch-gate";
 import Script from "next/script";
@@ -33,7 +32,6 @@ export default function RootLayout({
             <ThemeToggle />
           </header>
           <div className="flex min-h-screen bg-background">
-            <SidebarShell />
             <div className="flex-1">{children}</div>
           </div>
           <LaunchGate />

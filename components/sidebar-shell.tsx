@@ -41,19 +41,29 @@ export function SidebarShell() {
 
   useEffect(() => {
     setIsAuthed(Boolean(user));
+    console.log(user)
   }, [user]);
 
   if (!isAuthed) return null;
 
   return (
-    <aside className="hidden lg:flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface p-4 text-text-primary">
+    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface p-4 text-text-primary">
       <div className="mb-4 text-lg font-semibold">AI Trade Journal</div>
       <nav className="flex flex-col gap-1">
         <Link href="/" className="rounded-md px-3 py-2 hover:bg-hover">
           Home
         </Link>
-        <Link href="/auth" className="rounded-md px-3 py-2 hover:bg-hover">
-          Auth
+        <Link href="/dashboard" className="rounded-md px-3 py-2 hover:bg-hover">
+          Overview
+        </Link>
+        <Link href="/dashboard/analytics" className="rounded-md px-3 py-2 hover:bg-hover">
+          Analytics
+        </Link>
+        <Link href="/dashboard/settings" className="rounded-md px-3 py-2 hover:bg-hover">
+          Settings
+        </Link>
+        <Link href="/dashboard/profile" className="rounded-md px-3 py-2 hover:bg-hover">
+          Profile
         </Link>
         <a
           onClick={() => {
