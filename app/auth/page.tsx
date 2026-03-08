@@ -1,8 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-context";
+
+const AUTH_KEY = "ai-trade-journal-auth";
 
 const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const PASSWORD_RULES = {
@@ -57,6 +61,8 @@ function hasConfig(config: ReturnType<typeof getFirebaseConfig>) {
 }
 
 export default function AuthPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,6 +72,12 @@ export default function AuthPage() {
   const [firebaseLoaded, setFirebaseLoaded] = useState(false);
 
   const passwordErrors = useMemo(() => getPasswordErrors(password), [password]);
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/dashboard");
+    }
+  }, [loading, user, router]);
 
   const initFirebase = () => {
     const config = getFirebaseConfig();
@@ -83,6 +95,13 @@ export default function AuthPage() {
     if (!window.firebase.apps.length) {
       window.firebase.initializeApp(config);
     }
+
+    try {
+      const user = window.firebase.auth().currentUser;
+      if (user) {
+        localStorage.setItem(AUTH_KEY, "true");
+      }
+    } catch {}
 
     setFirebaseLoaded(true);
   };
@@ -116,9 +135,14 @@ export default function AuthPage() {
         ? await auth.signInWithEmailAndPassword(email, password)
         : await auth.createUserWithEmailAndPassword(email, password);
 
+      try {
+        localStorage.setItem(AUTH_KEY, "true");
+      } catch {}
+
       setStatus(
         `${isLoginMode ? "Signed in" : "Account created"} for ${result.user.email ?? "user"}.`,
       );
+      router.replace("/dashboard");
     } catch (authError) {
       const message = authError instanceof Error ? authError.message : "Authentication failed.";
       setError(message);
@@ -144,7 +168,12 @@ export default function AuthPage() {
       provider.setCustomParameters({ prompt: "select_account" });
       const result = await auth.signInWithPopup(provider);
 
+      try {
+        localStorage.setItem(AUTH_KEY, "true");
+      } catch {}
+
       setStatus(`Signed in with Google as ${result.user.email ?? "user"}.`);
+      router.replace("/dashboard");
     } catch (googleError) {
       const message = googleError instanceof Error ? googleError.message : "Google sign in failed.";
       setError(message);
